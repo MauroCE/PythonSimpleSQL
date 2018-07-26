@@ -1,3 +1,14 @@
+"""
+Notice that you can find more information about how a statement should be
+prepared for pyodbc to execute it here:
+https://stackoverflow.com/questions/43855514/pyodbc-execute-sql-code
+https://github.com/mkleehammer/pyodbc/wiki/Cursor#Methods
+
+Examples of pyodbc execution and stmt syntax here:
+https://stackoverflow.com/questions/20199569/pyodbc-insert-into-sql
+https://stackoverflow.com/questions/37008848/basic-pyodbc-bulk-insert
+http://thepythonguru.com/inserting-rows/
+"""
 from config import SQL_DBO
 from sql_table import Table
 
@@ -5,6 +16,8 @@ from sql_table import Table
 def insert(table: str, schema: str=SQL_DBO) -> str:
     """
     This function creates an insert statement for table.
+    Insert statement syntax taken from:
+    https://docs.microsoft.com/en-us/sql/t-sql/statements/insert-transact-sql?view=sql-server-2017
 
     :param table: Name of the table that we want to insert data into.
     :type table: str
@@ -26,7 +39,8 @@ def insert(table: str, schema: str=SQL_DBO) -> str:
 
 def update(table: str, schema: str=SQL_DBO) -> str:
     """
-    Creates update statement.
+    Creates update statement. Syntax for SQL update statement taken from
+    https://docs.microsoft.com/en-us/sql/t-sql/queries/update-transact-sql?view=sql-server-2017
 
     :param table: Name of table we are updating.
     :type table: str

@@ -5,6 +5,7 @@ from config import SQL_DRIVER, SQL_DB, SQL_SERVER
 # only so that the connection string looks much clearer. Could also just
 # write this into pyobdc.connect() function. See:
 # https://github.com/mkleehammer/pyodbc/wiki/Connecting-to-SQL-Server-from-Windows
+# https://docs.microsoft.com/nl-be/sql/connect/python/pyodbc/step-3-proof-of-concept-connecting-to-sql-using-pyodbc?view=sql-server-2017
 connection_string = (
     r"Driver={driver};"
     r"Server={server};"
