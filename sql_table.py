@@ -51,7 +51,7 @@ class Table:
         for c in data.itertuples(index=False):
             col = Column(name=c.COLUMN_NAME, is_nullable=c.IS_NULLABLE,
                          table_order=c.ORDINAL_POSITION, data_type=c.DATA_TYPE,
-                         type_name=c.TYPE_NAME)
+                         type_name=c.TYPE_NAME, table=self.name)
             columns.append(col)
         return columns
 
@@ -59,7 +59,7 @@ class Table:
 class Column:
 
     def __init__(self, name: str, is_nullable: bool, table_order: int,
-                 data_type: int, type_name: str):
+                 data_type: int, type_name: str, table: str):
         """
         Constructor for Column class.
 
@@ -73,6 +73,8 @@ class Column:
         :type data_type: int
         :param type_name: Name of the data type.
         :type type_name: str
+        :param table: Name of the table this column is from
+        :type table: str
         """
         # Initialize all attributes
         self.name = name
@@ -80,15 +82,16 @@ class Column:
         self.table_order = table_order
         self.type = type_name
         self.type_int = data_type
+        self.table = table
 
     def __repr__(self):
         """
         Return string that can be eval() to re-instantiate the obj.
         :return:
         """
-        s = "Column('{name}', {null}, {ord}, {type}, '{type2}')".format(
+        s = "Column('{name}', {null}, {ord}, {type}, '{type2}', '{t}')".format(
             name=self.name, null=self.is_nullable, ord=self.table_order,
-            type=self.type_int, type2=self.type
+            type=self.type_int, type2=self.type, t=self.table
         )
         return s
 
@@ -96,4 +99,4 @@ class Column:
 if __name__ == "__main__":
     t = Table('CustomTimeSeries')
     print(t)
-    print('hi')
+    print(t.columns)
