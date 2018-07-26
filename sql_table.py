@@ -1,6 +1,3 @@
-import pyodbc
-import pandas as pd
-from config import SQL_DBO
 from connection import cursor
 
 
@@ -15,7 +12,15 @@ class Table:
         """
         self.name = name
         # Table class HAS A Column (one at least)
-        self.columns = self.get_cols()
+        self.colObjects = self._get_cols()
+        # Ordered columns, keys, non-keys, types
+        self.cols = [c.name for c in self.colObjects]
+        self.keys = [c.name for c in self.colObjects if c.iskey]
+        self.non_keys = [c for c in self.cols if c not in self.keys]
+        self.types = [c.type for c in self.colObjects]
+        # Get fields that auto-increment (e.g. IDENTITY(1,1))
+        self.auto = [c.name for c in self.colObjects if 'identity' in c.type]
+        self.non_auto = [c for c in self.cols if c not in self.auto]
 
     def __repr__(self) -> str:
         """
@@ -26,7 +31,7 @@ class Table:
         """
         return "Table('{}')".format(self.name)
 
-    def get_cols(self):
+    def _get_cols(self):
         """
         This function implements a better way of getting information about the
         columns.
@@ -51,15 +56,18 @@ class Table:
         for name in info.keys():
             c = Column(name=name, is_nullable=info[name]['null'],
                        table_order=info[name]['index'],
-                       type_name=info[name]['type'], table=self.name)
+                       type_name=info[name]['type'], table=self.name,
+                       is_key=info[name]['is_key'])
             columns.append(c)
+        # Order them by ordinal position
+        columns = sorted(columns, key=lambda x: x.table_order)
         return columns
 
 
 class Column:
 
     def __init__(self, name: str, is_nullable: bool, table_order: int,
-                 type_name: str, table: str):
+                 type_name: str, is_key: bool, table: str):
         """
         Constructor for Column class.
 
@@ -73,6 +81,8 @@ class Column:
         :type type_name: str
         :param table: Name of the table this column is from
         :type table: str
+        :param is_key: Whether this column is a primary key or not
+        :type is_key: bool
         """
         # Initialize all attributes
         self.name = name
@@ -80,6 +90,7 @@ class Column:
         self.table_order = table_order
         self.type = type_name
         self.table = table
+        self.iskey = is_key
 
     def __repr__(self):
         """
@@ -94,6 +105,4 @@ class Column:
 
 
 if __name__ == "__main__":
-    t = Table('CustomTimeSeries')
-    print(t)
-    print(t.columns)
+    pass
