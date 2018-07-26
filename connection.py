@@ -23,4 +23,3 @@ cursor = cnxn.cursor()
 # In this package we will use large batches of statements. These are executed
 # faster if we add fast_executemany=True
 cursor.fast_executemany = True
-
