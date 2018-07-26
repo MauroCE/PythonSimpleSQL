@@ -4,3 +4,6 @@ venv/
 
 # Python
 __pycache__/
+
+# Do not track SQL Server configuration settings
+config.py
