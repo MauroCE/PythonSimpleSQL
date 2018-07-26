@@ -15,7 +15,7 @@ class Table:
         """
         self.name = name
         # Table class HAS A Column (one at least)
-        self.columns = self._columns_info()
+        self.columns = self.get_cols()
 
     def __repr__(self) -> str:
         """
@@ -26,40 +26,40 @@ class Table:
         """
         return "Table('{}')".format(self.name)
 
-    def _columns_info(self) -> list:
+    def get_cols(self):
         """
-        This function gets information about the columns.
+        This function implements a better way of getting information about the
+        columns.
+        To read more about these methods, go to:
+        https://github.com/mkleehammer/pyodbc/wiki/Cursor
+        https://stackoverflow.com/questions/37712307/pyodbc-read-primary-keys-from-ms-access-mdb-database
         :return:
         """
-        # Need to get column names. There are multiple ways but they depend
-        # on MS-SQL version. For more information, see here:
-        # https://stackoverflow.com/a/11459153/6435921
-        stmt = "exec sp_columns '{}'".format(self.name) # Need ''
-        cursor.execute(stmt)
-        # Fetch all the results, construct a DataFrame from it
-        data = pd.DataFrame.from_records(
-            data=cursor.fetchall(),
-            columns=[c[0] for c in cursor.description]
-        )
-        # Only keep col name, data type, type name, nullable, position
-        cols = ['COLUMN_NAME', 'DATA_TYPE', 'TYPE_NAME',
-                'IS_NULLABLE', 'ORDINAL_POSITION']
-        # Order the rows to get column names in correct order
-        data = data.loc[:, cols].sort_values(by=['ORDINAL_POSITION'])
-        # Add columns to a list as Column instances
+        # Get columns info
+        cols = list(cursor.columns(table=self.name))
+        # Get names of primary key columns
+        keys = [key.column_name for key in list(cursor.primaryKeys(self.name))]
+        # Get type, table position, nullable bool, primarykey bool
+        info = {col.column_name: {
+            'type': col.type_name,
+            'index': col.ordinal_position - 1,
+            'null': False if col.is_nullable == "NO" else True,
+            'is_key': True if col.column_name in keys else False
+        } for col in cols}
+        # Use this information to instantiate Column objects
         columns = []
-        for c in data.itertuples(index=False):
-            col = Column(name=c.COLUMN_NAME, is_nullable=c.IS_NULLABLE,
-                         table_order=c.ORDINAL_POSITION, data_type=c.DATA_TYPE,
-                         type_name=c.TYPE_NAME, table=self.name)
-            columns.append(col)
+        for name in info.keys():
+            c = Column(name=name, is_nullable=info[name]['null'],
+                       table_order=info[name]['index'],
+                       type_name=info[name]['type'], table=self.name)
+            columns.append(c)
         return columns
 
 
 class Column:
 
     def __init__(self, name: str, is_nullable: bool, table_order: int,
-                 data_type: int, type_name: str, table: str):
+                 type_name: str, table: str):
         """
         Constructor for Column class.
 
@@ -69,8 +69,6 @@ class Column:
         :type is_nullable: bool
         :param table_order: Ordinal position of the column in the table def
         :type table_order: int
-        :param data_type: Integer representing the data type of the column
-        :type data_type: int
         :param type_name: Name of the data type.
         :type type_name: str
         :param table: Name of the table this column is from
@@ -81,7 +79,6 @@ class Column:
         self.is_nullable = is_nullable
         self.table_order = table_order
         self.type = type_name
-        self.type_int = data_type
         self.table = table
 
     def __repr__(self):
@@ -89,9 +86,9 @@ class Column:
         Return string that can be eval() to re-instantiate the obj.
         :return:
         """
-        s = "Column('{name}', {null}, {ord}, {type}, '{type2}', '{t}')".format(
+        s = "Column('{name}', {null}, {ord}, '{type2}', '{t}')".format(
             name=self.name, null=self.is_nullable, ord=self.table_order,
-            type=self.type_int, type2=self.type, t=self.table
+            type2=self.type, t=self.table
         )
         return s
 
