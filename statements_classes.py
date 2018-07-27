@@ -194,6 +194,6 @@ if __name__ == "__main__":
     f.and_(op='like', join='and', word=1, sentence=2)
     print(f)
     # Selector
-    s = Selector(use_alias=True)
+    s = Selector(alias='table', use_alias=True)
     s.column_list('col1', 'col2', 'col3', col4='c4', col5='c5', distinct=['col1', 'col5'])
     print(s.stmt)
